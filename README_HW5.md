@@ -44,6 +44,24 @@
 MLOps CI/CD Pipeline
 ```
 
+## Змінні середовища
+
+Для роботи pipeline використовується змінна середовища MLFLOW_TRACKING_URI.
+
+Вона задана безпосередньо у файлі GitHub Actions workflow:
+
+MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+
+Ця змінна вказує адресу MLflow tracking server, який запускається всередині CI-середовища GitHub Actions під час виконання pipeline.
+
+Окремі GitHub Secrets у цьому pipeline не використовуються, оскільки MLflow server запускається локально всередині workflow.
+
+Назва зареєстрованої моделі:
+
+sentiment-classifier
+
+використовується у коді проєкту для реєстрації найкращої моделі в MLflow Model Registry.
+
 ## Тригери запуску pipeline
 
 Pipeline налаштовано на кілька типів запуску.
@@ -79,17 +97,6 @@ Pipeline також має scheduled trigger.
 ```
 щопонеділка о 06:00 UTC
 ```
-
-## Секрети та змінні середовища
-
-Для роботи pipeline в GitHub Actions використовуються такі секрети та змінні середовища (налаштовуються у `Settings → Secrets and variables → Actions`):
-
-| Назва | Призначення |
-|---|---|
-| `MLFLOW_TRACKING_URI` | Адреса MLflow tracking server, що використовується під час тренування та інференсу |
-| `MODEL_REGISTRY_NAME` | Назва зареєстрованої моделі (`sentiment-classifier`) |
-
-> Якщо у вашому pipeline використовуються додаткові секрети (наприклад, токени доступу до хмарного сховища артефактів), додайте їх до цієї таблиці.
 
 ## Структура CI/CD pipeline
 
@@ -314,7 +321,7 @@ Pipeline було успішно запущено в GitHub Actions.
 
 Успішно виконано job: `train-and-deploy`
 
-> Посилання на успішний прогін: `<додати посилання на конкретний run у GitHub Actions>`
+> Посилання на успішний прогін: `https://github.com/OwLIRV/mlops-final-project-sentiment/actions/runs/29015287549/job/86108644568`
 
 Це підтверджує, що CI/CD pipeline реально працює та автоматизує основні етапи доставки ML-моделі:
 
