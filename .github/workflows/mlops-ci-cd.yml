@@ -5,7 +5,15 @@ on:
     branches:
       - main
       - final-project
+
+  release:
+    types:
+      - published
+
   workflow_dispatch:
+
+  schedule:
+    - cron: "0 6 * * 1"
 
 jobs:
   train-and-deploy:
