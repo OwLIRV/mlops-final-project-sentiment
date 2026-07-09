@@ -1,0 +1,84 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - final-project
+  workflow_dispatch:
+
+jobs:
+  train-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: http://127.0.0.1:5000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate dataset
+        run: |
+          python scripts/validate_data.py
+
+      - name: Split dataset
+        run: |
+          python scripts/split_data.py
+
+      - name: Start MLflow tracking server
+        run: |
+          mlflow server \
+            --backend-store-uri sqlite:///mlflow.db \
+            --default-artifact-root ./mlruns \
+            --host 127.0.0.1 \
+            --port 5000 > mlflow.log 2>&1 &
+          sleep 15
+          curl --retry 10 --retry-delay 3 http://127.0.0.1:5000 || true
+
+      - name: Train models and track experiments
+        run: |
+          python scripts/train_experiments.py
+
+      - name: Register best model
+        run: |
+          python scripts/register_best_model.py
+
+      - name: Generate Evidently drift report
+        run: |
+          python scripts/evidently_report.py
+
+      - name: Deploy FastAPI service in CI environment
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+          sleep 20
+          curl --fail http://127.0.0.1:8000/health
+
+      - name: Smoke test prediction endpoint
+        run: |
+          curl --fail -X POST "http://127.0.0.1:8000/predict" \
+            -H "Content-Type: application/json" \
+            -d '{"texts":["Сервіс працює добре","Мені не сподобалось обслуговування","Замовлення оформлено"]}'
+
+      - name: Upload MLflow and report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlops-artifacts
+          path: |
+            mlruns/
+            mlflow.db
+            models/
+            reports/
+            mlflow.log
+            api.log
