@@ -1,4 +1,4 @@
-# Final MLOps Project — Ukrainian Review Sentiment Classification
+# Final MLOps Project — Ukrainian Review Sentiment Classification (https://github.com/OwLIRV/mlops-final-project-sentiment/actions/runs/29015287549)
 
 ## Опис проєкту
 
